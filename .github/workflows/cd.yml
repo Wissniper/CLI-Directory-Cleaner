@@ -19,16 +19,16 @@ jobs:
         include:
           # We definiëren hier 3 specifieke configuraties
           - os: ubuntu-latest
-            artifact_name: ugent_cleaner       # Hoe heet het bestand standaard?
-            asset_name: ugent-cleaner-linux    # Hoe moet het heten voor de download?
+            artifact_name: directory_cleaner       # Hoe heet het bestand standaard?
+            asset_name: directory-cleaner-linux    # Hoe moet het heten voor de download?
 
           - os: windows-latest
-            artifact_name: ugent_cleaner.exe   # Windows heeft .exe nodig
-            asset_name: ugent-cleaner-windows.exe
+            artifact_name: directory_cleaner.exe   # Windows heeft .exe nodig
+            asset_name: directory-cleaner-windows.exe
 
           - os: macos-latest
-            artifact_name: ugent_cleaner
-            asset_name: ugent-cleaner-macos
+            artifact_name: directory_cleaner
+            asset_name: directory-cleaner-macos
 
     steps:
       # 1. Code ophalen

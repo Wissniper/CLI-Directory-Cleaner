@@ -7,7 +7,7 @@
 
 **A high-performance, concurrent CLI tool to organize chaotic directories.**
 
-As a Computer Science student at Ghent University, my Downloads folder is often a mess of PDFs, Python scripts, and images. I built this tool to learn **Rust** and **Systems Programming** concepts by creating something that is not just educational, but actually useful.
+As a Computer Science student at Ghent University, my Downloads folder is often a mess of PDFs, scripts, and images. I built this tool to learn **Rust** and **Systems Programming** concepts by creating something that is not just educational, but actually useful.
 
 It recursively scans a target directory and organizes files into subfolders based on their extensions, using multi-threading to handle thousands of files in milliseconds.
 
@@ -15,10 +15,10 @@ It recursively scans a target directory and organizes files into subfolders base
 
 ## Key Features
 
-* **Blazingly Fast:** Uses `rayon` for data parallelism to process files concurrently across all CPU cores.
+* **Fast:** Uses `rayon` for data parallelism to process files concurrently across all CPU cores.
 * **Memory Safe:** Built with Rust's strict ownership and borrowing rules (no segfaults, no garbage collection pauses).
 * **Automated CI/CD:** Fully automated testing and release pipeline using GitHub Actions.
-* **Robust Error Handling:** Gracefully handles permission errors (e.g., open files) using Rust's `Result<T, E>` pattern.
+* **Error Handling:** Handles permission errors (e.g., open files) using Rust's `Result<T, E>` pattern.
 
 ---
 
@@ -29,16 +29,16 @@ You do not need to install Rust to use this tool. You can download the pre-compi
 ### Option 1: Download Binary (Recommended)
 1. Go to **[Releases](https://github.com/Wissniper/CLI-Directory-Cleaner/releases)**.
 2. Download the version for your OS:
-   * `ugent-cleaner-windows.exe` (Windows)
-   * `ugent-cleaner-linux` (Linux)
-   * `ugent-cleaner-macos` (macOS)
+   * `directory-cleaner-windows.exe` (Windows)
+   * `directory-cleaner-linux` (Linux)
+   * `directory-cleaner-macos` (macOS)
 3. Run it from your terminal.
 
 ### Option 2: Build from Source
 If you have `cargo` installed:
 ```bash
 git clone [https://github.com/Wissniper/CLI-Directory-Cleaner.git](https://github.com/Wissniper/CLI-Directory-Cleaner.git)
-cd ugent-cleaner
+cd directory-cleaner
 cargo build --release
 ```
 
@@ -48,13 +48,13 @@ cargo build --release
 
 ```bash
 # Basic Usage: Organize the current folder
-./ugent-cleaner --path .
+./directory-cleaner --path .
 
 # Organize a specific target folder
-./ugent-cleaner --path ./Downloads
+./directory-cleaner --path ./Downloads
 
 # Dry Run (See what WOULD happen without moving files)
-./ugent-cleaner --path ./Downloads --dry-run
+./directory-cleaner --path ./Downloads --dry-run
 ```
 
 **Output Example:**
@@ -75,7 +75,7 @@ Done! Processed 1,402 files in 0.12 seconds.
 ## Project Structure
 
 ```plaintext
-ugent-cleaner/
+directory-cleaner/
 ├── .github/                 # GitHub configuration folder
 │   └── workflows/           # Where your CI/CD pipelines live
 │       ├── ci.yml           # The "Inspector" (Test & Check)
