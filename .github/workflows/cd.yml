@@ -1,0 +1,63 @@
+name: Release Builder
+
+# TRIGGER: Alleen als je een tag pusht die begint met 'v'
+on:
+  push:
+    tags:
+      - "v*"
+
+# Zorg dat de robot bestanden mag uploaden naar je repo
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Release voor ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # We definiëren hier 3 specifieke configuraties
+          - os: ubuntu-latest
+            artifact_name: ugent_cleaner       # Hoe heet het bestand standaard?
+            asset_name: ugent-cleaner-linux    # Hoe moet het heten voor de download?
+
+          - os: windows-latest
+            artifact_name: ugent_cleaner.exe   # Windows heeft .exe nodig
+            asset_name: ugent-cleaner-windows.exe
+
+          - os: macos-latest
+            artifact_name: ugent_cleaner
+            asset_name: ugent-cleaner-macos
+
+    steps:
+      # 1. Code ophalen
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Rust installeren
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      # 3. Bouwen (Release mode = geoptimaliseerd)
+      - name: Build Release
+        run: cargo build --release
+
+      # 4. Bestand hernoemen (Linux & Mac)
+      # We verplaatsen het bestand van de 'target' map naar de hoofdmap met een nieuwe naam
+      - name: Rename Binary (Unix)
+        if: matrix.os != 'windows-latest'
+        run: mv target/release/${{ matrix.artifact_name }} ./${{ matrix.asset_name }}
+
+      # 5. Bestand hernoemen (Windows)
+      # Windows gebruikt 'move' of 'mv' in PowerShell, maar syntax is iets anders
+      - name: Rename Binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: move target/release/${{ matrix.artifact_name }} ./${{ matrix.asset_name }}
+
+      # 6. Uploaden naar GitHub Releases
+      # Dit is de magie. We gebruiken een kant-en-klare actie hiervoor.
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ matrix.asset_name }}

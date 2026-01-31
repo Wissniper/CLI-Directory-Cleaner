@@ -1,0 +1,18 @@
+[package]
+name = "directory-cleaner"
+version = "0.1.0"
+edition = "2021"
+authors = ["Wisdom Ononiba"]
+description = "A high-performance, concurrent CLI tool to organize chaotic directories"
+license = "MIT"
+repository = "https://github.com/Wissniper/CLI-Directory-Cleaner"
+
+[[bin]]
+name = "directory-cleaner"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+walkdir = "2"
+rayon = "1"
+anyhow = "1"
