@@ -1,7 +1,7 @@
 # CLI Directory Cleaner (Rust CLI Tool)
 
 [![Rust CI Pipeline](https://github.com/Wissniper/CLI-Directory-Cleaner/actions/workflows/ci.yml/badge.svg)](https://github.com/Wissniper/CLI-Directory-Cleaner/actions)
-[![Release Builder](https://github.com/Wissniper/CLI-Directory-Cleaner/actions/workflows/release.yml/badge.svg)](https://github.com/Wissniper/CLI-Directory-Cleaner/releases)
+[![Release Builder](https://github.com/Wissniper/CLI-Directory-Cleaner/actions/workflows/cd.yml/badge.svg)](https://github.com/Wissniper/CLI-Directory-Cleaner/releases)
 ![Language](https://img.shields.io/badge/Language-Rust-orange)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -60,14 +60,26 @@ cargo build --release
 **Output Example:**
 
 ```text
-Scanning directory: ./Downloads
-Found 1,402 files. Processing with Rayon...
--------------------------------------------
-[SUCCESS] Moved report.pdf -> ./Downloads/pdf/report.pdf
-[SUCCESS] Moved script.py -> ./Downloads/python/script.py
-[SKIP]    Locked file detected: system.log
--------------------------------------------
-Done! Processed 1,402 files in 0.12 seconds.
+Scanning directory: "./Downloads"
+Found 1402 files
+Moved "./Downloads/report.pdf" -> "./Downloads/pdf/report.pdf"
+Moved "./Downloads/script.py" -> "./Downloads/py/script.py"
+--- Organization Complete ---
+[.pdf] : 50 files
+[.py] : 12 files
+[.png] : 203 files
+```
+
+**Dry Run Example:**
+
+```text
+Scanning directory: "./Downloads"
+Found 1402 files
+[DRY RUN] Would move "./Downloads/report.pdf" -> "./Downloads/pdf/report.pdf"
+[DRY RUN] Would move "./Downloads/script.py" -> "./Downloads/py/script.py"
+--- Organization Complete ---
+[.pdf] : 50 files
+[.py] : 12 files
 ```
 
 ---
@@ -78,18 +90,18 @@ Done! Processed 1,402 files in 0.12 seconds.
 directory-cleaner/
 ├── .github/                 # GitHub configuration folder
 │   └── workflows/           # Where your CI/CD pipelines live
-│       ├── ci.yml           # The "Inspector" (Test & Check)
-│       └── release.yml      # The "Factory" (Build & Publish)
+│       ├── ci.yml           # The "Inspector" (Test & Check on all platforms)
+│       └── cd.yml           # The "Factory" (Build & Publish releases)
 ├── src/                     # The actual Rust code goes here
-│   ├── main.rs              # The entry point (initializes CLI, calls logic)
-│   ├── args.rs              # Defines the Clap struct (CLI arguments)
-│   └── logic.rs             # Contains the moving/scanning functions
+│   ├── main.rs              # Entry point (parses CLI args, calls logic)
+│   ├── args.rs              # Defines the CLI arguments using Clap
+│   └── logic.rs             # Core logic: directory scanning & file organization
 ├── target/                  # (Auto-generated) Compiled binaries live here
 ├── .gitignore               # Tells git to ignore the 'target' folder
 ├── Cargo.lock               # (Auto-generated) Exact versions of dependencies
 ├── Cargo.toml               # Project metadata and dependencies (like package.json)
 ├── LICENSE                  # The MIT License text file
-└── README.md                # The documentation
+└── README.md                # This documentation
 ```
 
 ## Technical Implementation
@@ -108,16 +120,29 @@ files.iter().for_each(|file| process(file));
 files.par_iter().for_each(|file| process(file));
 ```
 
-### 2. Ownership & Thread Safety (`Arc<Mutex>`)
+### 2. Ownership & Thread Safety (`Arc<Mutex<HashMap>>`)
 
-To track statistics (e.g., "50 PDFs moved") across multiple threads, I had to use an `Arc` (Atomic Reference Counter) to share ownership of the data, wrapped in a `Mutex` to ensure safe concurrent writes.
+To track statistics (e.g., "50 PDFs moved") across multiple threads, I use an `Arc<Mutex<HashMap<String, i32>>>`:
+
+- **HashMap** stores extension -> count pairs (e.g., "pdf" -> 50)
+- **Mutex** ensures only one thread writes to the map at a time (prevents data races)
+- **Arc** (Atomic Reference Counter) allows multiple threads to share ownership of the Mutex
+
+```rust
+let stats: Arc<Mutex<HashMap<String, i32>>> = Arc::new(Mutex::new(HashMap::new()));
+
+// In each thread:
+let stats_clone = Arc::clone(&stats);  // Clone the Arc (cheap, just increments counter)
+let mut map = stats_clone.lock().unwrap();  // Lock, then access
+*map.entry(ext).or_insert(0) += 1;  // Increment count
+```
 
 ### 3. CI/CD Pipeline (GitHub Actions)
 
 I implemented a full CI/CD pipeline to automate quality control:
 
-* **CI (`ci.yml`):** Runs `cargo fmt`, `clippy`, and `cargo test` on every push to ensure code quality and style consistency.
-* **CD (`cd.yml`):** Automatically compiles binaries for **Windows, Linux, and macOS** when a new tag (e.g., `v1.0.0`) is pushed.
+* **CI (`ci.yml`):** Runs `cargo fmt`, `clippy`, and `cargo test` on every push to `main`. Tests run on all three platforms (Windows, Linux, macOS) to ensure cross-platform compatibility.
+* **CD (`cd.yml`):** Automatically compiles optimized release binaries for **Windows, Linux, and macOS** when a new version tag (e.g., `v1.0.0`) is pushed, and uploads them to GitHub Releases.
 ---
 
 ## Dependencies
@@ -131,7 +156,7 @@ I implemented a full CI/CD pipeline to automate quality control:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
