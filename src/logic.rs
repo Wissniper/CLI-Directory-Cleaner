@@ -1,9 +1,9 @@
+use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use rayon::iter::IntoParallelRefIterator;
 use walkdir::WalkDir;
 
 // =============================================================================

@@ -1,9 +1,9 @@
-mod logic;
 mod args;
+mod logic;
 
+use anyhow::Result;
 use args::Cli;
 use clap::Parser;
-use anyhow::Result;
 
 fn main() -> Result<()> {
     let args = Cli::parse();
