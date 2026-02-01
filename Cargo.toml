@@ -1,5 +1,5 @@
 [package]
-name = "directory_cleaner"
+name = "directory-cleaner"
 version = "0.1.0"
 edition = "2021"
 authors = ["Wisdom Ononiba"]

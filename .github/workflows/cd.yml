@@ -1,62 +1,61 @@
 name: Release Builder
 
-# TRIGGER: Alleen als je een tag pusht die begint met 'v'
+# TRIGGER: Only when you push a tag starting with 'v'
 on:
   push:
     tags:
       - "v*"
 
-# Zorg dat de robot bestanden mag uploaden naar je repo
+# Allow the workflow to upload files to your repo
 permissions:
   contents: write
 
 jobs:
   publish:
-    name: Release voor ${{ matrix.os }}
+    name: Release for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          # We definiëren hier 3 specifieke configuraties
+          # Define 3 specific configurations
           - os: ubuntu-latest
-            artifact_name: directory_cleaner       # Hoe heet het bestand standaard?
-            asset_name: directory-cleaner-linux    # Hoe moet het heten voor de download?
+            artifact_name: directory-cleaner       # Must match the name in Cargo.toml [[bin]]
+            asset_name: directory-cleaner-linux
 
           - os: windows-latest
-            artifact_name: directory_cleaner.exe   # Windows heeft .exe nodig
+            artifact_name: directory-cleaner.exe   # Windows adds .exe extension
             asset_name: directory-cleaner-windows.exe
 
           - os: macos-latest
-            artifact_name: directory_cleaner
+            artifact_name: directory-cleaner
             asset_name: directory-cleaner-macos
 
     steps:
-      # 1. Code ophalen
+      # 1. Get the code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Rust installeren
+      # 2. Install Rust
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # 3. Bouwen (Release mode = geoptimaliseerd)
+      # 3. Build (Release mode = optimized)
       - name: Build Release
         run: cargo build --release
 
-      # 4. Bestand hernoemen (Linux & Mac)
-      # We verplaatsen het bestand van de 'target' map naar de hoofdmap met een nieuwe naam
+      # 4. Rename binary (Linux & Mac)
+      # Move the file from the 'target' folder to the root with a new name
       - name: Rename Binary (Unix)
         if: matrix.os != 'windows-latest'
         run: mv target/release/${{ matrix.artifact_name }} ./${{ matrix.asset_name }}
 
-      # 5. Bestand hernoemen (Windows)
-      # Windows gebruikt 'move' of 'mv' in PowerShell, maar syntax is iets anders
+      # 5. Rename binary (Windows)
+      # Windows uses 'move' instead of 'mv'
       - name: Rename Binary (Windows)
         if: matrix.os == 'windows-latest'
         run: move target/release/${{ matrix.artifact_name }} ./${{ matrix.asset_name }}
 
-      # 6. Uploaden naar GitHub Releases
-      # Dit is de magie. We gebruiken een kant-en-klare actie hiervoor.
+      # 6. Upload to GitHub Releases
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
